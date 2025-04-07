@@ -102,9 +102,7 @@ public class Server {
         StringBuilder info = new StringBuilder();
         for(int i =0;i<inbox.get(loggedInUser.getEmail()).size();i++)
         {
-            info.append("["+i+"]"+" ");
-            info.append(inbox.get(loggedInUser.getEmail()).get(i).getTitle());
-            info.append("\n");
+            info.append(String.format("[%d] %s\n",i,inbox.get(loggedInUser.getEmail()).get(i).getTitle()));
         }
         return info.toString();
     }
