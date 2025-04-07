@@ -52,11 +52,12 @@ public class Server {
                if(user.checkPassword(password))
                {
                    loggedInUser = user;
+                   correct = true;
                }
                break;
            }
         }
-        if(!found) return null;
+        if(!found||!correct) return null;
 
 
 
@@ -74,32 +75,50 @@ public class Server {
         // TODO: verify the token is valid
         // if not, return "Invalid token"
 
-        loggedInUsers.get(token);
-
+        if(loggedInUsers.get(token)==null)return "Invalid token";
 
         // TODO: set the sender of the message
 
+        message.setSender(loggedInUsers.get(token));
+
         // TODO: send the message by calling the send method
 
-        return "Message sent successfully!";
+        if(this.send(message)) return "Message sent successfully!";
+        else return "Message not sent!";
     }
 
     public String getEmailList(String token) {
         // TODO: verify the token is valid
 
+        if(loggedInUsers.get(token)==null)return "Invalid token";
+
         // TODO: get the user from the tokens
+
+        User loggedInUser = loggedInUsers.get(token);
 
         // TODO: get the user's inbox and return the list of messages
         // Hint: only return the titles of the messages
-        return "Email list";
+
+        StringBuilder info = new StringBuilder();
+        for(int i =0;i<inbox.get(loggedInUser.getEmail()).size();i++)
+        {
+            info.append("["+i+"]"+" ");
+            info.append(inbox.get(loggedInUser.getEmail()).get(i).getTitle());
+            info.append("\n");
+        }
+        return info.toString();
     }
 
     public String getEmail(String token, int index) {
         // TODO: verify the token is valid
 
+        if(loggedInUsers.get(token)==null)return "Invalid token";
+
         // TODO: check index and return the message at the index
         // Hint: toString is already implemented in the Message class
-        return "Message";
+
+        return inbox.get(loggedInUsers.get(token).getEmail()).get(index).toString();
+
     }
 
     // Method below are for the server to send and receive messages
@@ -109,14 +128,36 @@ public class Server {
         // in the recipient's server.
         // If the receive method returns false, return false
         // Note that the recipient's server can be found in the network
-        return true;
+
+
+        boolean send = false;
+        for(String recipient : message.getRecipients()) {
+            for(Server eachServer : network.getServers()) {
+                if(eachServer.toString().equals(recipient.split("@")[1])) {
+                    send = eachServer.receive(message,recipient);
+                }
+            }
+        }
+
+        return send;
     }
 
     public boolean receive(Message message, String recipient) {
         // TODO: verify the recipient is in the users list
         // then add the message to the recipient's inbox
         // if not, return false
-        return true;
+
+        boolean receive = false;
+        for(User eachUser : users)
+        {
+            if(eachUser.getEmail().equals(recipient))
+            {
+                inbox.get(eachUser.getEmail()).add(message);
+                receive = true;
+            }
+        }
+
+        return receive;
     }
 
     public String toString() { return domain; }
